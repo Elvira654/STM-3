@@ -1,0 +1,94 @@
+#include "stm32f10x.h"                  // Device header
+int broj[]={0xC0, 0xF9, 0xA4, 0xB0, 0x99, 0x92, 0x82, 0xF8, 0x80, 0x90, 0x86};//brojevi za 7 segmentni ispisani u hex zapisu
+void Ispis(int);
+void Ugasi();
+void delay()
+{
+	for(int i=0;i<1000000;i++);
+}
+int main()
+{
+	RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
+	
+	GPIOA->CRL |= GPIO_CRL_MODE;
+	GPIOA->CRL &=~ GPIO_CRL_CNF;
+	
+	RCC->APB2ENR|=RCC_APB2ENR_IOPBEN; 
+	GPIOB->CRL &=~(1<<0);
+	GPIOB->CRL &=~(1<<1);
+	GPIOB->CRL &=~(1<<2);
+	GPIOB -> CRL |=(1<<3);
+	
+	int a=5, b=0;
+	while(1)
+{
+		if(b>9)
+{
+			b=0;
+}
+		if(GPIOB -> IDR & GPIO_IDR_IDR4)
+		{
+			if(b<a)
+					{
+							Ispis(b);
+							delay();
+							Ugasi();
+									
+							a=b;
+					}
+				else
+					{
+									Ispis(10);
+									delay();
+									Ugasi();
+					}
+							while(GPIOB -> IDR & GPIO_IDR_IDR4)
+							{
+								
+							   Ispis(0x7F);
+								 delay();
+								
+							};
+			}			
+else if(GPIOB -> IDR & GPIO_IDR_IDR5)
+{
+		if(b>a)
+{
+	Ispis(b);
+	delay();
+	 Ugasi();
+		a=b;
+}
+else
+{
+	Ispis(10);
+	delay();
+	Ugasi();
+	
+}
+while(GPIOB -> IDR & GPIO_IDR_IDR5)
+							{   
+								
+							   Ispis(0x7F);
+								 delay();
+								
+							};
+}
+  Ispis(a);
+  delay();
+  Ugasi();
+		b++;
+}
+}
+void Ugasi()
+{
+	for(int s=16;s<25;s++)
+	  {
+		   GPIOA->BSRR=1<<s;
+	  }
+}
+
+void Ispis(int c)
+{
+	GPIOA->BSRR=broj[c];
+}
